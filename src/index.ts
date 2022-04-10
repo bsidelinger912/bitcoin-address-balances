@@ -1,24 +1,21 @@
-import fetch from 'node-fetch';
+import { writeFile } from 'fs';
+
+import { getLatestBlock } from './data';
+import { Addresses, Block } from './types';
+
+const addresses: Addresses = {};
 
 async function main() {
-  const result = await fetch('https://btc.getblock.io/mainnet/', {
-    method: 'POST',
-    headers: {
-      'x-api-key': '070a2510-055e-471a-a791-cb4020480dc5',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      "jsonrpc": "2.0",
-      "method": "getbestblockhash",
-      "params": [],
-      "id": "getblock.io"
-    }),
-  });
+  const block = await getLatestBlock();
 
-  const json = await result.json();
+  const smallerBlock: Partial<Block> = {
+    hash: block.hash,
+    tx: block.tx.slice(0, 3),
+  };
 
-  console.log('**************');
-    console.log(json);
+  console.log(JSON.stringify(smallerBlock, null, 2));
+
+  await writeFile('../tests/fixtures/block.json', JSON.stringify(smallerBlock, null, 2), { encoding: 'utf-8' }, () => null);
 }
 
 main();
